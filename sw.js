@@ -3,7 +3,7 @@
  * Enables offline functionality and caching
  */
 
-const CACHE_NAME = 'cosmiclink-v1';
+const CACHE_NAME = 'cosmiclink-v2';
 const ASSETS = [
     '/',
     '/index.html',

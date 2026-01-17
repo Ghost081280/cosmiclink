@@ -19,7 +19,8 @@ const state = {
         audio: { active: false, stream: null, analyser: null, dataArray: null },
         magnetometer: { active: false, sensor: null },
         motion: { active: false, sensor: null },
-        light: { active: false, sensor: null }
+        light: { active: false, sensor: null },
+        radiation: { active: false, stream: null, hits: 0, lastFrame: null }
     },
     audioContext: null,
     transmitAudioContext: null,
@@ -64,6 +65,11 @@ function init() {
         lightSensor: document.getElementById('lightSensor'),
         lightLevel: document.getElementById('lightLevel'),
         lightReading: document.getElementById('lightReading'),
+        radiationSensor: document.getElementById('radiationSensor'),
+        radiationLevel: document.getElementById('radiationLevel'),
+        radiationReading: document.getElementById('radiationReading'),
+        radiationVideo: document.getElementById('radiationVideo'),
+        radiationCanvas: document.getElementById('radiationCanvas'),
         signalList: document.getElementById('signalList'),
         anomalyCount: document.getElementById('anomalyCount'),
         analysisPanel: document.getElementById('analysisPanel'),
@@ -187,6 +193,7 @@ async function startScan() {
     await initMagnetometer();
     await initMotionSensor();
     await initLightSensor();
+    await initRadiationDetector();
     
     // Start visualization loop
     requestAnimationFrame(visualizationLoop);
@@ -241,6 +248,11 @@ function stopAllSensors() {
         state.sensors.light.sensor.stop();
         state.sensors.light.active = false;
         updateSensorCard(dom.lightSensor, false);
+    }
+    if (state.sensors.radiation.stream) {
+        state.sensors.radiation.stream.getTracks().forEach(track => track.stop());
+        state.sensors.radiation.active = false;
+        updateSensorCard(dom.radiationSensor, false);
     }
 }
 
@@ -435,6 +447,139 @@ function updateLightDisplay(lux) {
     const normalized = Math.min(lux / 1000, 1);
     dom.lightLevel.style.width = `${normalized * 100}%`;
     dom.lightReading.textContent = lux.toFixed(0) + ' lux';
+}
+
+// ============================================
+// COSMIC RAY / RADIATION DETECTOR
+// Uses camera sensor in darkness to detect particle hits
+// ============================================
+
+let radiationAnimationId = null;
+let radiationCtx = null;
+
+async function initRadiationDetector() {
+    try {
+        // Request back camera (better for radiation detection)
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 320 },
+                height: { ideal: 240 }
+            }
+        });
+        
+        const video = dom.radiationVideo;
+        const canvas = dom.radiationCanvas;
+        
+        video.srcObject = stream;
+        await video.play();
+        
+        canvas.width = video.videoWidth || 320;
+        canvas.height = video.videoHeight || 240;
+        radiationCtx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        state.sensors.radiation = {
+            active: true,
+            stream: stream,
+            hits: 0,
+            lastFrame: null,
+            totalHits: 0
+        };
+        
+        updateSensorCard(dom.radiationSensor, true);
+        addLogEntry('system', 'Cosmic ray detector online. Cover camera lens for best results.');
+        showToast('info', 'Cover your camera lens for cosmic ray detection');
+        
+        // Start detection loop
+        detectRadiation();
+        
+    } catch (err) {
+        console.error('Radiation detector init failed:', err);
+        updateSensorCard(dom.radiationSensor, false, true);
+        addLogEntry('system', 'Camera unavailable for cosmic ray detection');
+    }
+}
+
+function detectRadiation() {
+    if (!state.isScanning || !state.sensors.radiation.active) {
+        return;
+    }
+    
+    const video = dom.radiationVideo;
+    const canvas = dom.radiationCanvas;
+    const ctx = radiationCtx;
+    
+    if (!ctx || !video.videoWidth) {
+        radiationAnimationId = requestAnimationFrame(detectRadiation);
+        return;
+    }
+    
+    // Capture current frame
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const currentFrame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = currentFrame.data;
+    
+    let hits = 0;
+    const threshold = 60; // Brightness threshold for a "hit"
+    const clusterThreshold = 3; // Minimum bright pixels for a valid hit
+    
+    // Look for bright pixel clusters (cosmic ray signature)
+    const brightPixels = [];
+    
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const brightness = (r + g + b) / 3;
+        
+        if (brightness > threshold) {
+            const x = (i / 4) % canvas.width;
+            const y = Math.floor((i / 4) / canvas.width);
+            brightPixels.push({ x, y, brightness });
+        }
+    }
+    
+    // Cluster detection - look for groups of bright pixels
+    if (state.sensors.radiation.lastFrame) {
+        const lastPixels = state.sensors.radiation.lastFrame.data;
+        
+        for (const pixel of brightPixels) {
+            const idx = (pixel.y * canvas.width + pixel.x) * 4;
+            const lastBrightness = (lastPixels[idx] + lastPixels[idx + 1] + lastPixels[idx + 2]) / 3;
+            
+            // Sudden bright flash that wasn't there before = potential hit
+            if (pixel.brightness - lastBrightness > 40) {
+                hits++;
+            }
+        }
+    }
+    
+    // Update state
+    state.sensors.radiation.lastFrame = currentFrame;
+    state.sensors.radiation.hits = hits;
+    state.sensors.radiation.totalHits += hits;
+    
+    // Update display
+    updateRadiationDisplay(hits, state.sensors.radiation.totalHits);
+    
+    // Register anomaly for significant hits
+    if (hits >= clusterThreshold) {
+        console.log('Cosmic ray hit detected! Hits:', hits);
+        registerAnomaly('COSMIC', {
+            hits: hits,
+            totalHits: state.sensors.radiation.totalHits,
+            timestamp: Date.now(),
+            hasPattern: hits > 5 // Multiple simultaneous hits is unusual
+        });
+    }
+    
+    radiationAnimationId = requestAnimationFrame(detectRadiation);
+}
+
+function updateRadiationDisplay(hits, total) {
+    const normalized = Math.min(hits / 10, 1);
+    dom.radiationLevel.style.width = `${normalized * 100}%`;
+    dom.radiationReading.textContent = `${total} hits`;
 }
 
 // ============================================
@@ -1324,6 +1469,7 @@ function checkDeviceCapabilities() {
     
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         capabilities.push('AUDIO');
+        capabilities.push('COSMIC'); // Camera can detect cosmic rays
     }
     if ('Magnetometer' in window) {
         capabilities.push('MAG');

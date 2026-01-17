@@ -1,0 +1,54 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="100%" stop-color="#050709"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#7b2fff"/>
+    </linearGradient>
+    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="50%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#7b2fff"/>
+    </linearGradient>
+    <radialGradient id="coreGrad">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00d4ff"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bgGrad)" rx="100"/>
+  
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="200" stroke="url(#ringGrad)" stroke-width="8" fill="none" filter="url(#glow)"/>
+  
+  <!-- Middle ring -->
+  <circle cx="256" cy="256" r="150" stroke="url(#ringGrad)" stroke-width="4" fill="none" opacity="0.5"/>
+  
+  <!-- Signal waves -->
+  <path d="M256 80 Q360 168 256 256 Q152 344 256 432" stroke="url(#waveGrad)" stroke-width="6" fill="none" opacity="0.7" filter="url(#glow)"/>
+  <path d="M256 80 Q152 168 256 256 Q360 344 256 432" stroke="url(#waveGrad)" stroke-width="6" fill="none" opacity="0.7" filter="url(#glow)"/>
+  
+  <!-- Inner rings -->
+  <circle cx="256" cy="256" r="80" stroke="url(#coreGrad)" stroke-width="3" fill="none" opacity="0.6"/>
+  <circle cx="256" cy="256" r="50" stroke="url(#coreGrad)" stroke-width="2" fill="none" opacity="0.4"/>
+  
+  <!-- Center core -->
+  <circle cx="256" cy="256" r="30" fill="url(#coreGrad)" filter="url(#glow)"/>
+  
+  <!-- Pulse effect -->
+  <circle cx="256" cy="256" r="25" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.8">
+    <animate attributeName="r" from="25" to="60" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" from="0.8" to="0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

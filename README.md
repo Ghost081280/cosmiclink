@@ -3,9 +3,15 @@
 ### Transform Your Phone Into a Universal Signal Detection Array
 
 <p align="center">
-  <a href="#-start-listening">
-    <img src="https://img.shields.io/badge/🚀_LAUNCH_APP-00d4ff?style=for-the-badge&logoColor=white" alt="Launch App">
+  <a href="https://ghost081280.github.io/cosmiclink/">
+    <img src="https://img.shields.io/badge/🚀_LAUNCH_SCANNER-00d4ff?style=for-the-badge&logoColor=white" alt="Launch Scanner">
   </a>
+  <a href="https://ghost081280.github.io/cosmiclink/test-signal.html">
+    <img src="https://img.shields.io/badge/🧪_TEST_SIGNAL_PAGE-ff6b35?style=for-the-badge&logoColor=white" alt="Test Signal Page">
+  </a>
+</p>
+
+<p align="center">
   <a href="#-how-it-works">
     <img src="https://img.shields.io/badge/🔬_HOW_IT_WORKS-7b2fff?style=for-the-badge&logoColor=white" alt="How It Works">
   </a>
@@ -16,6 +22,15 @@
     <img src="https://img.shields.io/badge/🧪_THE_SCIENCE-ff6b35?style=for-the-badge&logoColor=white" alt="The Science">
   </a>
 </p>
+
+---
+
+## 🔗 Quick Links
+
+| Link | Description |
+|------|-------------|
+| **[CosmicLink Scanner](https://ghost081280.github.io/cosmiclink/)** | Main signal detection app |
+| **[Test Signal Page](https://ghost081280.github.io/cosmiclink/test-signal.html)** | Generate test signals to verify detection |
 
 ---
 
@@ -148,7 +163,8 @@ Are you listening?
 </p>
 
 <p align="center">
-  <a href="https://ghost081280.github.io">Launch CosmicLink</a> •
+  <a href="https://ghost081280.github.io/cosmiclink/">Launch CosmicLink</a> •
+  <a href="https://ghost081280.github.io/cosmiclink/test-signal.html">Test Signal Page</a> •
   <a href="https://www.nasa.gov/artemis-ii">Follow Artemis II</a> •
   <a href="https://www.seti.org">Learn About SETI</a>
 </p>

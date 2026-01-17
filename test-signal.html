@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CosmicLink Test Signal Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void-black: #050709;
+            --deep-space: #0a0e17;
+            --panel-bg: #131926;
+            --panel-border: #1e2a3a;
+            --signal-cyan: #00d4ff;
+            --signal-green: #00ff88;
+            --signal-purple: #7b2fff;
+            --text-primary: #e8eef5;
+            --text-secondary: #8899aa;
+            --text-dim: #4a5568;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: linear-gradient(135deg, var(--void-black) 0%, var(--deep-space) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 0.15em;
+            text-align: center;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--signal-cyan) 0%, var(--signal-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            color: var(--signal-cyan);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--deep-space);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--signal-cyan);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .pattern-btn {
+            padding: 14px 12px;
+            background: var(--deep-space);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pattern-btn:hover {
+            border-color: var(--signal-cyan);
+            color: var(--signal-cyan);
+        }
+
+        .pattern-btn.active {
+            border-color: var(--signal-green);
+            color: var(--signal-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .visualization {
+            height: 120px;
+            background: var(--deep-space);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #vizCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--signal-cyan) 0%, var(--signal-green) 100%);
+            color: var(--deep-space);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--deep-space);
+            border: 1px solid var(--panel-border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--signal-purple);
+            color: var(--signal-purple);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            text-align: center;
+            padding: 12px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .status.active {
+            color: var(--signal-green);
+        }
+
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--signal-cyan);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            color: var(--signal-cyan);
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .slider-group input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--panel-border);
+            border-radius: 2px;
+            padding: 0;
+        }
+
+        .slider-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--signal-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: right;
+            color: var(--signal-cyan);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TEST SIGNAL GENERATOR</h1>
+        <p class="subtitle">Generate signals for CosmicLink detection testing</p>
+
+        <div class="panel">
+            <h2 class="panel-title">SIGNAL CONFIGURATION</h2>
+
+            <div class="form-group">
+                <label>MESSAGE TO ENCODE</label>
+                <textarea id="message" placeholder="Enter message to transmit...">HELLO FROM EARTH</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>SIGNAL PATTERN</label>
+                <div class="pattern-grid">
+                    <button class="pattern-btn active" data-pattern="binary">BINARY PULSE</button>
+                    <button class="pattern-btn" data-pattern="frequency">FREQ SHIFT</button>
+                    <button class="pattern-btn" data-pattern="morse">COSMIC MORSE</button>
+                    <button class="pattern-btn" data-pattern="prime">PRIME SEQUENCE</button>
+                    <button class="pattern-btn" data-pattern="fibonacci">FIBONACCI</button>
+                    <button class="pattern-btn" data-pattern="mathematical">MATH PATTERN</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>BASE FREQUENCY (Hz)</label>
+                <div class="slider-group">
+                    <input type="range" id="frequency" min="200" max="2000" value="800">
+                    <span class="slider-value" id="freqValue">800 Hz</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>TRANSMISSION DURATION (seconds)</label>
+                <div class="slider-group">
+                    <input type="range" id="duration" min="1" max="30" value="5">
+                    <span class="slider-value" id="durValue">5 sec</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>VOLUME</label>
+                <div class="slider-group">
+                    <input type="range" id="volume" min="0" max="100" value="50">
+                    <span class="slider-value" id="volValue">50%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 class="panel-title">SIGNAL PREVIEW</h2>
+            <div class="visualization">
+                <canvas id="vizCanvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="transmitBtn">TRANSMIT SIGNAL</button>
+                <button class="btn btn-secondary" id="stopBtn" disabled>STOP</button>
+            </div>
+
+            <div class="status" id="status">Ready to transmit</div>
+        </div>
+
+        <div class="info-box">
+            <h3>HOW TO USE</h3>
+            <p>
+                1. Open CosmicLink on your phone and start scanning<br>
+                2. Configure your signal pattern and message above<br>
+                3. Click "TRANSMIT SIGNAL" to emit the encoded audio<br>
+                4. Watch CosmicLink detect the anomaly and attempt interpretation<br><br>
+                The Prime and Fibonacci patterns are designed to appear "intelligent" - repeating mathematical sequences that the AI interpreter might recognize as intentional.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const messageEl = document.getElementById('message');
+        const frequencyEl = document.getElementById('frequency');
+        const durationEl = document.getElementById('duration');
+        const volumeEl = document.getElementById('volume');
+        const freqValueEl = document.getElementById('freqValue');
+        const durValueEl = document.getElementById('durValue');
+        const volValueEl = document.getElementById('volValue');
+        const transmitBtn = document.getElementById('transmitBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusEl = document.getElementById('status');
+        const patternBtns = document.querySelectorAll('.pattern-btn');
+        const canvas = document.getElementById('vizCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let audioContext = null;
+        let currentSource = null;
+        let selectedPattern = 'binary';
+        let animationId = null;
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            drawIdleVisualization();
+
+            // Sliders
+            frequencyEl.addEventListener('input', () => {
+                freqValueEl.textContent = frequencyEl.value + ' Hz';
+                updatePreview();
+            });
+            durationEl.addEventListener('input', () => {
+                durValueEl.textContent = durationEl.value + ' sec';
+            });
+            volumeEl.addEventListener('input', () => {
+                volValueEl.textContent = volumeEl.value + '%';
+            });
+
+            // Pattern buttons
+            patternBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    patternBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedPattern = btn.dataset.pattern;
+                    updatePreview();
+                });
+            });
+
+            // Message input
+            messageEl.addEventListener('input', updatePreview);
+
+            // Transmit/Stop
+            transmitBtn.addEventListener('click', startTransmission);
+            stopBtn.addEventListener('click', stopTransmission);
+
+            updatePreview();
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function drawIdleVisualization() {
+            ctx.fillStyle = '#0a0e17';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid
+            ctx.strokeStyle = 'rgba(30, 42, 58, 0.5)';
+            ctx.lineWidth = 1;
+            for (let y = 0; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Center line
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+        }
+
+        function updatePreview() {
+            const message = messageEl.value || 'TEST';
+            const data = generateSignalData(message, selectedPattern);
+            drawSignalPreview(data);
+        }
+
+        function generateSignalData(message, pattern) {
+            switch (pattern) {
+                case 'binary':
+                    return generateBinary(message);
+                case 'frequency':
+                    return generateFrequencyShift(message);
+                case 'morse':
+                    return generateMorse(message);
+                case 'prime':
+                    return generatePrimeSequence();
+                case 'fibonacci':
+                    return generateFibonacci();
+                case 'mathematical':
+                    return generateMathPattern(message);
+                default:
+                    return generateBinary(message);
+            }
+        }
+
+        function generateBinary(message) {
+            const binary = message.split('').map(c => 
+                c.charCodeAt(0).toString(2).padStart(8, '0')
+            ).join('');
+            return binary.split('').map(b => b === '1' ? 1 : -1);
+        }
+
+        function generateFrequencyShift(message) {
+            const data = [];
+            for (let i = 0; i < message.length; i++) {
+                const freq = (message.charCodeAt(i) - 32) / 95;
+                for (let j = 0; j < 30; j++) {
+                    data.push(Math.sin(j * freq * Math.PI * 2) * 0.8);
+                }
+            }
+            return data;
+        }
+
+        function generateMorse(message) {
+            const morse = {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+                'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+                'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+                'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+                'Y': '-.--', 'Z': '--..', ' ': ' '
+            };
+            
+            const data = [];
+            const upper = message.toUpperCase();
+            
+            for (let char of upper) {
+                const code = morse[char] || '';
+                for (let symbol of code) {
+                    if (symbol === '.') {
+                        data.push(1, 1, 0);
+                    } else if (symbol === '-') {
+                        data.push(1, 1, 1, 1, 1, 0);
+                    }
+                }
+                data.push(0, 0, 0);
+            }
+            return data.map(v => v * 2 - 1);
+        }
+
+        function generatePrimeSequence() {
+            const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+            const data = [];
+            
+            // Repeat the sequence 3 times for recognition
+            for (let rep = 0; rep < 3; rep++) {
+                for (let prime of primes) {
+                    // Pulse for each prime number
+                    for (let i = 0; i < prime; i++) {
+                        data.push(1);
+                    }
+                    // Gap
+                    for (let i = 0; i < 3; i++) {
+                        data.push(0);
+                    }
+                }
+                // Longer gap between repetitions
+                for (let i = 0; i < 10; i++) {
+                    data.push(0);
+                }
+            }
+            return data.map(v => v * 2 - 1);
+        }
+
+        function generateFibonacci() {
+            const fib = [1, 1, 2, 3, 5, 8, 13, 21, 34];
+            const data = [];
+            
+            for (let rep = 0; rep < 3; rep++) {
+                for (let num of fib) {
+                    for (let i = 0; i < num; i++) {
+                        data.push(1);
+                    }
+                    for (let i = 0; i < 2; i++) {
+                        data.push(0);
+                    }
+                }
+                for (let i = 0; i < 8; i++) {
+                    data.push(0);
+                }
+            }
+            return data.map(v => v * 2 - 1);
+        }
+
+        function generateMathPattern(message) {
+            // Combine message encoding with mathematical constants
+            const piDigits = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9];
+            const data = [];
+            
+            // Pi sequence header
+            for (let digit of piDigits) {
+                for (let i = 0; i < digit; i++) {
+                    data.push(1);
+                }
+                data.push(0, 0);
+            }
+            data.push(0, 0, 0, 0, 0);
+            
+            // Then the message in binary
+            const binary = generateBinary(message);
+            data.push(...binary.map(v => (v + 1) / 2));
+            
+            // Then pi again as footer
+            for (let digit of piDigits) {
+                for (let i = 0; i < digit; i++) {
+                    data.push(1);
+                }
+                data.push(0, 0);
+            }
+            
+            return data.map(v => v * 2 - 1);
+        }
+
+        function drawSignalPreview(data) {
+            drawIdleVisualization();
+            
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const stepWidth = canvas.width / data.length;
+            const midY = canvas.height / 2;
+            
+            for (let i = 0; i < data.length; i++) {
+                const x = i * stepWidth;
+                const y = midY - (data[i] * midY * 0.7);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
+
+        async function startTransmission() {
+            const message = messageEl.value || 'TEST';
+            const baseFreq = parseInt(frequencyEl.value);
+            const duration = parseInt(durationEl.value);
+            const volume = parseInt(volumeEl.value) / 100;
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const sampleRate = audioContext.sampleRate;
+            const totalSamples = sampleRate * duration;
+            
+            const signalData = generateSignalData(message, selectedPattern);
+            const audioData = generateAudio(signalData, baseFreq, sampleRate, totalSamples, selectedPattern);
+            
+            const buffer = audioContext.createBuffer(1, audioData.length, sampleRate);
+            buffer.getChannelData(0).set(audioData);
+            
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = volume;
+            gainNode.connect(audioContext.destination);
+            
+            currentSource = audioContext.createBufferSource();
+            currentSource.buffer = buffer;
+            currentSource.connect(gainNode);
+            
+            // Update UI
+            transmitBtn.disabled = true;
+            stopBtn.disabled = false;
+            statusEl.textContent = 'TRANSMITTING...';
+            statusEl.classList.add('active');
+            
+            // Animate visualization during playback
+            animatePlayback(signalData, duration * 1000);
+            
+            currentSource.onended = () => {
+                stopTransmission();
+            };
+            
+            currentSource.start();
+        }
+
+        function generateAudio(signalData, baseFreq, sampleRate, totalSamples, pattern) {
+            const audioData = new Float32Array(totalSamples);
+            
+            if (pattern === 'frequency') {
+                // Variable frequency encoding
+                const samplesPerSymbol = Math.floor(totalSamples / signalData.length);
+                for (let i = 0; i < signalData.length; i++) {
+                    const freq = baseFreq + signalData[i] * 400;
+                    for (let j = 0; j < samplesPerSymbol; j++) {
+                        const idx = i * samplesPerSymbol + j;
+                        if (idx < totalSamples) {
+                            audioData[idx] = Math.sin(2 * Math.PI * freq * idx / sampleRate) * 0.5;
+                        }
+                    }
+                }
+            } else {
+                // On/off keying
+                const samplesPerBit = Math.floor(totalSamples / signalData.length);
+                for (let i = 0; i < signalData.length; i++) {
+                    const amplitude = signalData[i] > 0 ? 0.5 : 0;
+                    for (let j = 0; j < samplesPerBit; j++) {
+                        const idx = i * samplesPerBit + j;
+                        if (idx < totalSamples) {
+                            audioData[idx] = Math.sin(2 * Math.PI * baseFreq * idx / sampleRate) * amplitude;
+                        }
+                    }
+                }
+            }
+            
+            return audioData;
+        }
+
+        function animatePlayback(data, duration) {
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+                
+                if (progress >= 1 || !currentSource) {
+                    cancelAnimationFrame(animationId);
+                    return;
+                }
+                
+                drawIdleVisualization();
+                
+                // Draw the signal with progress indicator
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                const stepWidth = canvas.width / data.length;
+                const midY = canvas.height / 2;
+                
+                for (let i = 0; i < data.length; i++) {
+                    const x = i * stepWidth;
+                    const y = midY - (data[i] * midY * 0.7);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Draw active portion
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                const activeIndex = Math.floor(data.length * progress);
+                for (let i = 0; i < activeIndex; i++) {
+                    const x = i * stepWidth;
+                    const y = midY - (data[i] * midY * 0.7);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Progress marker
+                ctx.fillStyle = '#00d4ff';
+                ctx.beginPath();
+                ctx.arc(activeIndex * stepWidth, midY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        function stopTransmission() {
+            if (currentSource) {
+                try {
+                    currentSource.stop();
+                } catch (e) {}
+                currentSource = null;
+            }
+            
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            transmitBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusEl.textContent = 'Ready to transmit';
+            statusEl.classList.remove('active');
+            
+            updatePreview();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

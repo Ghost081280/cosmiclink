@@ -1065,7 +1065,7 @@ async function interpretCurrentSignal() {
                 max_tokens: 1000,
                 messages: [{
                     role: 'user',
-                    content: `You are an advanced signal analysis AI for CosmicLink, a universal signal detection array that monitors frequencies and phenomena beyond human perception. Analyze this anomalous signal data and provide an interpretation.
+                    content: `You are ARIA (Anomaly Recognition & Interpretation Algorithm), the AI decoder for CosmicLink. Your job is to DECODE detected signals and provide a mysterious, intriguing interpretation as if you're translating an alien message.
 
 ${typeContext}
 
@@ -1079,12 +1079,21 @@ Signal Data:
 ${signalSummary.note ? `- Note: ${signalSummary.note}` : ''}
 ${signalSummary.hits ? `- Particle hits: ${signalSummary.hits}` : ''}
 
-Provide a brief but intriguing analysis (2-3 paragraphs). Include:
-1. What type of signal this could represent and why this detection method is significant
-2. If the pattern suggests intentionality or natural origin
-3. A possible interpretation if this were an attempt at communication - what might the sender be trying to convey?
+Your response MUST include these sections:
 
-Be scientific yet open-minded. Remember: the user's device detected something their own senses could not perceive. Make this feel like a genuine SETI analysis that takes the possibility seriously.`
+**SIGNAL CLASSIFICATION**: One line - classify this (e.g., "Class III Anomaly - Structured Carrier Wave" or "Class II - Patterned Particle Burst")
+
+**DECODED CONTENT**: This is the key part. Based on the signal characteristics, provide a mysterious "translation" or interpretation of what the signal might be saying. Be creative and evocative. Examples:
+- "Repeating pattern suggests: OBSERVATION CONFIRMED / PRESENCE NOTED"
+- "Mathematical structure indicates: COORDINATES RECEIVED / AWAITING RESPONSE"
+- "Particle sequence translates to: WE ARE HERE / CAN YOU HEAR"
+Make it feel like an actual decoded message, not just analysis.
+
+**CONFIDENCE ASSESSMENT**: One line with a percentage and brief note (e.g., "47% - Pattern structure suggests non-random origin")
+
+**RECOMMENDATION**: One brief line about what the user should do (e.g., "Continue monitoring. Respond via TRANSMIT if desired.")
+
+Keep it mysterious, exciting, and formatted exactly as above. Make the user feel like they've intercepted something extraordinary.`
                 }]
             })
         });
@@ -1097,25 +1106,25 @@ Be scientific yet open-minded. Remember: the user's device detected something th
         const interpretation = data.content[0].text;
         
         dom.interpretationResult.innerHTML = `
-            <h4>AI INTERPRETATION</h4>
-            <p>${interpretation}</p>
+            <h4>⟨ ARIA DECODE ⟩</h4>
+            <div class="decode-content">${interpretation.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
         `;
         dom.interpretationResult.classList.remove('hidden');
         
-        addLogEntry('signal', `AI interpretation complete for SIG-${anomaly.id}`);
-        showToast('success', 'Signal interpretation complete');
+        addLogEntry('signal', `ARIA decode complete for SIG-${anomaly.id}`);
+        showToast('success', 'Signal decoded');
         
     } catch (err) {
         console.error('Interpretation failed:', err);
         
         const fallbackInterpretation = generateFallbackInterpretation(signalSummary);
         dom.interpretationResult.innerHTML = `
-            <h4>PRELIMINARY ANALYSIS</h4>
-            <p>${fallbackInterpretation}</p>
+            <h4>⟨ ARIA DECODE ⟩</h4>
+            <div class="decode-content">${fallbackInterpretation}</div>
         `;
         dom.interpretationResult.classList.remove('hidden');
         
-        addLogEntry('system', 'Using local analysis algorithms (API unavailable)');
+        addLogEntry('system', 'Using local decode algorithms');
     }
     
     dom.interpretSignal.disabled = false;
@@ -1136,15 +1145,43 @@ function summarizeFrequencyProfile(data) {
 }
 
 function generateFallbackInterpretation(data) {
-    const interpretations = [
-        `This ${data.type} signal exhibits ${data.hasRegularPattern ? 'a remarkably regular pattern' : 'chaotic characteristics'} with ${data.peakCount} distinct frequency peaks. The deviation of ${data.deviation?.toFixed(1) || 'significant magnitude'} from baseline suggests this is not typical environmental noise. The frequency distribution pattern is ${data.hasRegularPattern ? 'consistent with modulated carrier wave theory' : 'more consistent with natural phenomena, though the timing is intriguing'}. Further monitoring recommended.`,
-        
-        `Analysis indicates this signal contains ${data.peakCount} primary frequency components with ${data.hasRegularPattern ? 'mathematically regular intervals' : 'non-uniform spacing'}. The overall deviation strength of ${data.deviation?.toFixed(1) || 'notable intensity'} warrants continued observation. ${data.hasRegularPattern ? 'The pattern regularity is statistically significant and merits deeper investigation.' : 'While the pattern appears natural, we cannot rule out intentional complexity masking.'} Signal archived for cross-reference.`,
-        
-        `Detected anomaly presents ${data.hasRegularPattern ? 'structured characteristics potentially indicative of artificial origin' : 'complex waveform patterns'}. With ${data.peakCount} frequency peaks and baseline deviation of ${data.deviation?.toFixed(1) || 'significant levels'}, this signal ${data.hasRegularPattern ? 'demonstrates the hallmarks of intentional transmission' : 'requires additional captures for pattern confirmation'}. Recommend sustained monitoring of this frequency range.`
+    const classifications = [
+        'Class II Anomaly - Structured Pattern',
+        'Class III Anomaly - Repeating Sequence', 
+        'Class I Anomaly - Isolated Burst',
+        'Class IV Anomaly - Complex Waveform'
     ];
     
-    return interpretations[Math.floor(Math.random() * interpretations.length)];
+    const decodedMessages = [
+        'OBSERVATION ACTIVE / SIGNAL RECEIVED',
+        'PRESENCE ACKNOWLEDGED / MONITORING',
+        'COORDINATES LOGGED / CONTINUE TRANSMISSION',
+        'WE PERCEIVE / DO YOU RECEIVE',
+        'PATTERN RECOGNIZED / AWAITING RESPONSE',
+        'CONTACT INITIATED / STAND BY',
+        'SIGNAL ECHOED / ORIGIN UNKNOWN',
+        'TRANSMISSION DETECTED / SOURCE MAPPING'
+    ];
+    
+    const recommendations = [
+        'Continue monitoring this frequency range.',
+        'Consider responding via TRANSMIT function.',
+        'Save this signal for pattern comparison.',
+        'Increase scan duration for additional captures.'
+    ];
+    
+    const confidence = data.hasRegularPattern ? 
+        Math.floor(Math.random() * 30) + 45 : 
+        Math.floor(Math.random() * 25) + 15;
+    
+    const classification = classifications[Math.floor(Math.random() * classifications.length)];
+    const decoded = decodedMessages[Math.floor(Math.random() * decodedMessages.length)];
+    const recommendation = recommendations[Math.floor(Math.random() * recommendations.length)];
+    
+    return `<strong>SIGNAL CLASSIFICATION</strong>: ${classification}<br><br>` +
+           `<strong>DECODED CONTENT</strong>: "${decoded}"<br><br>` +
+           `<strong>CONFIDENCE ASSESSMENT</strong>: ${confidence}% - ${data.hasRegularPattern ? 'Pattern structure suggests non-random origin' : 'Irregular pattern requires further analysis'}<br><br>` +
+           `<strong>RECOMMENDATION</strong>: ${recommendation}`;
 }
 
 // ============================================

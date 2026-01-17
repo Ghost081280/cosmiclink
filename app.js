@@ -582,16 +582,21 @@ function checkForAnomalies() {
         const peaks = findPeaks(dataArray);
         const hasUnusualPattern = peaks.length >= 3 && hasRegularSpacing(peaks);
         
+        // Debug logging
+        if (deviation > 10) {
+            console.log('Deviation detected:', deviation, 'Peaks:', peaks.length, 'Pattern:', hasUnusualPattern);
+        }
+        
         if (deviation > 15 || hasUnusualPattern) {
-            if (Math.random() < 0.4) {
-                registerAnomaly('AUDIO', {
-                    deviation: deviation,
-                    peaks: peaks,
-                    timestamp: Date.now(),
-                    frequencyData: Array.from(dataArray),
-                    hasPattern: hasUnusualPattern
-                });
-            }
+            // Always register for now - remove random chance for testing
+            console.log('REGISTERING ANOMALY - deviation:', deviation);
+            registerAnomaly('AUDIO', {
+                deviation: deviation,
+                peaks: peaks,
+                timestamp: Date.now(),
+                frequencyData: Array.from(dataArray),
+                hasPattern: hasUnusualPattern
+            });
         }
     }
     
@@ -643,6 +648,8 @@ function hasRegularSpacing(peaks) {
 }
 
 function registerAnomaly(type, data) {
+    console.log('registerAnomaly called with type:', type);
+    
     const anomaly = {
         id: generateId(),
         type: type,
@@ -653,6 +660,8 @@ function registerAnomaly(type, data) {
     
     state.anomalies.unshift(anomaly);
     state.totalAnomalies++;
+    
+    console.log('Total anomalies now:', state.anomalies.length);
     
     updateAnomalyDisplay();
     dom.anomalyCount.textContent = state.anomalies.length;

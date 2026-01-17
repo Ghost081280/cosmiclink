@@ -4,14 +4,11 @@
 
 <p align="center">
   <a href="https://ghost081280.github.io/cosmiclink/">
-    <img src="https://img.shields.io/badge/🚀_LAUNCH_SCANNER-00d4ff?style=for-the-badge&logoColor=white" alt="Launch Scanner">
+    <img src="https://img.shields.io/badge/🚀_LAUNCH_APP-00d4ff?style=for-the-badge&logoColor=white" alt="Launch App">
   </a>
   <a href="https://ghost081280.github.io/cosmiclink/test-signal.html">
-    <img src="https://img.shields.io/badge/🧪_TEST_SIGNAL_PAGE-ff6b35?style=for-the-badge&logoColor=white" alt="Test Signal Page">
+    <img src="https://img.shields.io/badge/📡_TEST_SIGNALS-ff00ff?style=for-the-badge&logoColor=white" alt="Test Signals">
   </a>
-</p>
-
-<p align="center">
   <a href="#-how-it-works">
     <img src="https://img.shields.io/badge/🔬_HOW_IT_WORKS-7b2fff?style=for-the-badge&logoColor=white" alt="How It Works">
   </a>
@@ -22,15 +19,6 @@
     <img src="https://img.shields.io/badge/🧪_THE_SCIENCE-ff6b35?style=for-the-badge&logoColor=white" alt="The Science">
   </a>
 </p>
-
----
-
-## 🔗 Quick Links
-
-| Link | Description |
-|------|-------------|
-| **[CosmicLink Scanner](https://ghost081280.github.io/cosmiclink/)** | Main signal detection app |
-| **[Test Signal Page](https://ghost081280.github.io/cosmiclink/test-signal.html)** | Generate test signals to verify detection |
 
 ---
 

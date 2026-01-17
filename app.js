@@ -582,8 +582,8 @@ function checkForAnomalies() {
         const peaks = findPeaks(dataArray);
         const hasUnusualPattern = peaks.length >= 3 && hasRegularSpacing(peaks);
         
-        if (deviation > 30 || hasUnusualPattern) {
-            if (Math.random() < 0.15) {
+        if (deviation > 15 || hasUnusualPattern) {
+            if (Math.random() < 0.4) {
                 registerAnomaly('AUDIO', {
                     deviation: deviation,
                     peaks: peaks,

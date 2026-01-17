@@ -53,6 +53,7 @@ function init() {
         masterScan: document.getElementById('masterScan'),
         scanTime: document.getElementById('scanTime'),
         sampleRate: document.getElementById('sampleRate'),
+        ultrasonicIndicator: document.getElementById('ultrasonicIndicator'),
         audioSensor: document.getElementById('audioSensor'),
         audioLevel: document.getElementById('audioLevel'),
         audioReading: document.getElementById('audioReading'),
@@ -616,12 +617,39 @@ function drawFrequencyVisualization() {
         dom.audioLevel.style.width = `${normalizedLevel * 100}%`;
         dom.audioReading.textContent = (normalizedLevel * 100).toFixed(0) + ' dB';
         
+        // Check for ultrasonic activity (upper 20% of frequency range = above ~18kHz)
+        const ultrasonicStart = Math.floor(dataArray.length * 0.8);
+        let ultrasonicActivity = 0;
+        for (let i = ultrasonicStart; i < dataArray.length; i++) {
+            ultrasonicActivity += dataArray[i];
+        }
+        ultrasonicActivity /= (dataArray.length - ultrasonicStart);
+        
+        // Show ultrasonic indicator if activity detected above threshold
+        if (ultrasonicActivity > 15) {
+            dom.ultrasonicIndicator.classList.add('active');
+            // Ultrasonic signals are especially interesting - could be non-human
+            if (ultrasonicActivity > 30 && Math.random() < 0.3) {
+                registerAnomaly('ULTRASONIC', {
+                    deviation: ultrasonicActivity,
+                    timestamp: Date.now(),
+                    frequencyData: Array.from(dataArray),
+                    hasPattern: true,
+                    note: 'Signal detected above human hearing range (18kHz+)'
+                });
+            }
+        } else {
+            dom.ultrasonicIndicator.classList.remove('active');
+        }
+        
         const barWidth = (width / dataArray.length) * 2.5;
         let x = 0;
         
         for (let i = 0; i < dataArray.length; i++) {
             const barHeight = (dataArray[i] / 255) * height * 0.8;
-            const hue = (i / dataArray.length) * 60 + 160;
+            // Color ultrasonic range differently (purple instead of cyan/green)
+            const isUltrasonic = i >= ultrasonicStart;
+            const hue = isUltrasonic ? 280 : (i / dataArray.length) * 60 + 160;
             ctx.fillStyle = `hsla(${hue}, 100%, 50%, 0.8)`;
             ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
             ctx.fillStyle = `hsla(${hue}, 100%, 50%, 0.2)`;
@@ -995,8 +1023,22 @@ async function interpretCurrentSignal() {
         deviation: anomaly.data.deviation,
         peakCount: anomaly.data.peaks?.length || 0,
         hasRegularPattern: anomaly.data.hasPattern,
-        frequencyProfile: anomaly.data.frequencyData ? summarizeFrequencyProfile(anomaly.data.frequencyData) : null
+        frequencyProfile: anomaly.data.frequencyData ? summarizeFrequencyProfile(anomaly.data.frequencyData) : null,
+        note: anomaly.data.note || null,
+        hits: anomaly.data.hits || null
     };
+    
+    // Build context based on signal type
+    let typeContext = '';
+    if (anomaly.type === 'ULTRASONIC') {
+        typeContext = 'This signal was detected in the ULTRASONIC range (18-24kHz) - frequencies ABOVE human hearing. An intelligent species might choose this frequency range specifically because humans cannot perceive it directly.';
+    } else if (anomaly.type === 'COSMIC') {
+        typeContext = 'This signal was detected via cosmic ray/particle impacts on the camera sensor. High-energy particles from deep space struck the device. Some theories suggest advanced civilizations could encode information in directed particle beams.';
+    } else if (anomaly.type === 'EM') {
+        typeContext = 'This signal was detected via electromagnetic field fluctuations captured by the magnetometer. EM manipulation is a plausible method for interstellar communication.';
+    } else {
+        typeContext = 'This signal was detected in the audible/near-audible audio spectrum.';
+    }
     
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1010,7 +1052,9 @@ async function interpretCurrentSignal() {
                 max_tokens: 1000,
                 messages: [{
                     role: 'user',
-                    content: `You are an advanced signal analysis AI for CosmicLink, a universal signal detection array. Analyze this anomalous signal data and provide an interpretation. Be scientific but open to the possibility this could be an attempt at non-terrestrial communication. Consider the patterns, frequencies, and timing.
+                    content: `You are an advanced signal analysis AI for CosmicLink, a universal signal detection array that monitors frequencies and phenomena beyond human perception. Analyze this anomalous signal data and provide an interpretation.
+
+${typeContext}
 
 Signal Data:
 - Type: ${signalSummary.type}
@@ -1019,13 +1063,15 @@ Signal Data:
 - Peak frequencies detected: ${signalSummary.peakCount}
 - Regular pattern detected: ${signalSummary.hasRegularPattern ? 'Yes' : 'No'}
 - Frequency profile: ${signalSummary.frequencyProfile || 'N/A'}
+${signalSummary.note ? `- Note: ${signalSummary.note}` : ''}
+${signalSummary.hits ? `- Particle hits: ${signalSummary.hits}` : ''}
 
 Provide a brief but intriguing analysis (2-3 paragraphs). Include:
-1. What type of signal this could represent
+1. What type of signal this could represent and why this detection method is significant
 2. If the pattern suggests intentionality or natural origin
-3. A possible interpretation if this were an attempt at communication
+3. A possible interpretation if this were an attempt at communication - what might the sender be trying to convey?
 
-Be creative and engaging while remaining grounded in the actual data. Make it feel like a real SETI analysis.`
+Be scientific yet open-minded. Remember: the user's device detected something their own senses could not perceive. Make this feel like a genuine SETI analysis that takes the possibility seriously.`
                 }]
             })
         });

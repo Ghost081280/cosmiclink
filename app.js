@@ -30,62 +30,68 @@ const state = {
 // DOM REFERENCES
 // ============================================
 
-const dom = {
-    sliderTabs: document.querySelectorAll('.slider-tab'),
-    sections: document.querySelectorAll('.content-section'),
-    systemStatus: document.getElementById('systemStatus'),
-    statusDot: document.querySelector('.status-dot'),
-    statusText: document.querySelector('.status-text'),
-    frequencyCanvas: document.getElementById('frequencyCanvas'),
-    vizPrimary: document.querySelector('.viz-primary'),
-    masterScan: document.getElementById('masterScan'),
-    scanTime: document.getElementById('scanTime'),
-    sampleRate: document.getElementById('sampleRate'),
-    audioSensor: document.getElementById('audioSensor'),
-    audioLevel: document.getElementById('audioLevel'),
-    audioReading: document.getElementById('audioReading'),
-    magSensor: document.getElementById('magSensor'),
-    magLevel: document.getElementById('magLevel'),
-    magReading: document.getElementById('magReading'),
-    motionSensor: document.getElementById('motionSensor'),
-    motionLevel: document.getElementById('motionLevel'),
-    motionReading: document.getElementById('motionReading'),
-    lightSensor: document.getElementById('lightSensor'),
-    lightLevel: document.getElementById('lightLevel'),
-    lightReading: document.getElementById('lightReading'),
-    signalList: document.getElementById('signalList'),
-    anomalyCount: document.getElementById('anomalyCount'),
-    analysisPanel: document.getElementById('analysisPanel'),
-    closeAnalysis: document.getElementById('closeAnalysis'),
-    signalDetailCanvas: document.getElementById('signalDetailCanvas'),
-    analysisData: document.getElementById('analysisData'),
-    interpretSignal: document.getElementById('interpretSignal'),
-    interpretationResult: document.getElementById('interpretationResult'),
-    transmitMessage: document.getElementById('transmitMessage'),
-    charCount: document.getElementById('charCount'),
-    encodingOptions: document.querySelectorAll('.encoding-option'),
-    transmitPreview: document.getElementById('transmitPreview'),
-    beginTransmit: document.getElementById('beginTransmit'),
-    transmitStatus: document.getElementById('transmitStatus'),
-    transmitProgress: document.getElementById('transmitProgress'),
-    logEntries: document.getElementById('logEntries'),
-    logFilters: document.querySelectorAll('.log-filter'),
-    clearLog: document.getElementById('clearLog'),
-    totalScanTimeEl: document.getElementById('totalScanTime'),
-    totalAnomaliesEl: document.getElementById('totalAnomalies'),
-    totalTransmitsEl: document.getElementById('totalTransmits'),
-    userCoords: document.getElementById('userCoords'),
-    deviceInfo: document.getElementById('deviceInfo'),
-    toastContainer: document.getElementById('toastContainer')
-};
-
+let dom = {};
 let freqCtx, detailCtx, previewCtx;
+
+function initDomReferences() {
+    dom = {
+        sliderTabs: document.querySelectorAll('.slider-tab'),
+        sections: document.querySelectorAll('.content-section'),
+        systemStatus: document.getElementById('systemStatus'),
+        statusDot: document.querySelector('.status-dot'),
+        statusText: document.querySelector('.status-text'),
+        frequencyCanvas: document.getElementById('frequencyCanvas'),
+        vizPrimary: document.querySelector('.viz-primary'),
+        masterScan: document.getElementById('masterScan'),
+        scanTime: document.getElementById('scanTime'),
+        sampleRate: document.getElementById('sampleRate'),
+        audioSensor: document.getElementById('audioSensor'),
+        audioLevel: document.getElementById('audioLevel'),
+        audioReading: document.getElementById('audioReading'),
+        magSensor: document.getElementById('magSensor'),
+        magLevel: document.getElementById('magLevel'),
+        magReading: document.getElementById('magReading'),
+        motionSensor: document.getElementById('motionSensor'),
+        motionLevel: document.getElementById('motionLevel'),
+        motionReading: document.getElementById('motionReading'),
+        lightSensor: document.getElementById('lightSensor'),
+        lightLevel: document.getElementById('lightLevel'),
+        lightReading: document.getElementById('lightReading'),
+        signalList: document.getElementById('signalList'),
+        anomalyCount: document.getElementById('anomalyCount'),
+        analysisPanel: document.getElementById('analysisPanel'),
+        closeAnalysis: document.getElementById('closeAnalysis'),
+        signalDetailCanvas: document.getElementById('signalDetailCanvas'),
+        analysisData: document.getElementById('analysisData'),
+        interpretSignal: document.getElementById('interpretSignal'),
+        interpretationResult: document.getElementById('interpretationResult'),
+        transmitMessage: document.getElementById('transmitMessage'),
+        charCount: document.getElementById('charCount'),
+        encodingOptions: document.querySelectorAll('.encoding-option'),
+        transmitPreview: document.getElementById('transmitPreview'),
+        beginTransmit: document.getElementById('beginTransmit'),
+        transmitStatus: document.getElementById('transmitStatus'),
+        transmitProgress: document.getElementById('transmitProgress'),
+        logEntries: document.getElementById('logEntries'),
+        logFilters: document.querySelectorAll('.log-filter'),
+        clearLog: document.getElementById('clearLog'),
+        totalScanTimeEl: document.getElementById('totalScanTime'),
+        totalAnomaliesEl: document.getElementById('totalAnomalies'),
+        totalTransmitsEl: document.getElementById('totalTransmits'),
+        userCoords: document.getElementById('userCoords'),
+        deviceInfo: document.getElementById('deviceInfo'),
+        toastContainer: document.getElementById('toastContainer')
+    };
+}
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
 function init() {
+    // Initialize DOM references first
+    initDomReferences();
+    
     freqCtx = dom.frequencyCanvas.getContext('2d');
     detailCtx = dom.signalDetailCanvas.getContext('2d');
     previewCtx = dom.transmitPreview.getContext('2d');
@@ -1896,8 +1902,4 @@ function showToast(type, message) {
 // INITIALIZE
 // ============================================
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+document.addEventListener('DOMContentLoaded', init);

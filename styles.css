@@ -384,6 +384,90 @@ body {
     display: block;
 }
 
+/* Info Banner */
+.info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(123, 47, 255, 0.1) 100%);
+    border: 1px solid var(--signal-cyan-dim);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.info-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    color: var(--signal-cyan);
+}
+
+.info-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.info-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-text strong {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--signal-cyan);
+}
+
+.info-text span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Ultrasonic Indicator */
+.ultrasonic-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(123, 47, 255, 0.2);
+    border: 1px solid var(--signal-purple);
+    border-radius: 20px;
+    animation: ultrasonicPulse 1s ease-in-out infinite;
+}
+
+.ultrasonic-indicator.active {
+    display: flex;
+}
+
+.ultrasonic-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--signal-purple);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--signal-purple);
+}
+
+.ultrasonic-text {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--signal-purple);
+}
+
+@keyframes ultrasonicPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .viz-overlay {
     position: absolute;
     inset: 0;

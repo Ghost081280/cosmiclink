@@ -142,6 +142,37 @@
             background: rgba(0, 255, 136, 0.1);
         }
 
+        .pattern-btn.ultrasonic {
+            border-color: var(--signal-purple);
+            color: var(--signal-purple);
+        }
+
+        .pattern-btn.ultrasonic:hover {
+            background: rgba(123, 47, 255, 0.1);
+        }
+
+        .pattern-btn.ultrasonic.active {
+            border-color: var(--signal-purple);
+            color: var(--signal-purple);
+            background: rgba(123, 47, 255, 0.2);
+            box-shadow: 0 0 15px rgba(123, 47, 255, 0.3);
+        }
+
+        .pattern-note {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: rgba(123, 47, 255, 0.1);
+            border: 1px solid var(--signal-purple);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--signal-purple);
+            display: none;
+        }
+
+        .pattern-note.visible {
+            display: block;
+        }
+
         .visualization {
             height: 120px;
             background: var(--deep-space);
@@ -287,7 +318,11 @@
                     <button class="pattern-btn" data-pattern="prime">PRIME SEQUENCE</button>
                     <button class="pattern-btn" data-pattern="fibonacci">FIBONACCI</button>
                     <button class="pattern-btn" data-pattern="mathematical">MATH PATTERN</button>
+                    <button class="pattern-btn ultrasonic" data-pattern="ultrasonic">ULTRASONIC</button>
+                    <button class="pattern-btn ultrasonic" data-pattern="ultrasonic-prime">ULTRA PRIMES</button>
+                    <button class="pattern-btn ultrasonic" data-pattern="ultrasonic-sweep">ULTRA SWEEP</button>
                 </div>
+                <p class="pattern-note" id="patternNote"></p>
             </div>
 
             <div class="form-group">
@@ -336,8 +371,10 @@
                 2. Configure your signal pattern and message above<br>
                 3. Click "TRANSMIT SIGNAL" to emit the encoded audio<br>
                 4. Watch CosmicLink detect the anomaly and attempt interpretation<br><br>
-                The Prime and Fibonacci patterns are designed to appear "intelligent" - repeating mathematical sequences that the AI interpreter might recognize as intentional.
+                <strong>AUDIBLE PATTERNS:</strong> Binary, Frequency, Morse, Prime, Fibonacci, Math - you'll hear these.<br><br>
+                <strong>ULTRASONIC PATTERNS (Purple):</strong> These transmit at 19-22kHz - ABOVE human hearing! You won't hear anything, but CosmicLink will detect it as an "ULTRASONIC" anomaly. This simulates how aliens might contact us using frequencies we can't perceive.
             </p>
+        </div>
         </div>
     </div>
 
@@ -387,6 +424,15 @@
                     btn.classList.add('active');
                     selectedPattern = btn.dataset.pattern;
                     updatePreview();
+                    
+                    // Show/hide ultrasonic note
+                    const patternNote = document.getElementById('patternNote');
+                    if (selectedPattern.startsWith('ultrasonic')) {
+                        patternNote.textContent = "⚠️ ULTRASONIC MODE: You will NOT hear this signal - it transmits at 19-22kHz (above human hearing). Your phone's CosmicLink will detect it as an ULTRASONIC anomaly.";
+                        patternNote.classList.add('visible');
+                    } else {
+                        patternNote.classList.remove('visible');
+                    }
                 });
             });
 
@@ -448,9 +494,45 @@
                     return generateFibonacci();
                 case 'mathematical':
                     return generateMathPattern(message);
+                case 'ultrasonic':
+                    return generateUltrasonic(message);
+                case 'ultrasonic-prime':
+                    return generateUltrasonicPrime();
+                case 'ultrasonic-sweep':
+                    return generateUltrasonicSweep();
                 default:
                     return generateBinary(message);
             }
+        }
+
+        // Ultrasonic patterns (for visualization - actual audio generated separately)
+        function generateUltrasonic(message) {
+            // Simple on/off pattern for ultrasonic
+            const binary = message.split('').map(c => 
+                c.charCodeAt(0).toString(2).padStart(8, '0')
+            ).join('');
+            return binary.split('').map(b => b === '1' ? 1 : -1);
+        }
+
+        function generateUltrasonicPrime() {
+            const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+            const data = [];
+            for (let rep = 0; rep < 3; rep++) {
+                for (let prime of primes) {
+                    for (let i = 0; i < prime; i++) data.push(1);
+                    for (let i = 0; i < 3; i++) data.push(0);
+                }
+                for (let i = 0; i < 10; i++) data.push(0);
+            }
+            return data.map(v => v * 2 - 1);
+        }
+
+        function generateUltrasonicSweep() {
+            const data = [];
+            for (let i = 0; i < 200; i++) {
+                data.push(Math.sin(i * 0.1 * (1 + i * 0.01)));
+            }
+            return data;
         }
 
         function generateBinary(message) {
@@ -620,7 +702,11 @@
             // Update UI
             transmitBtn.disabled = true;
             stopBtn.disabled = false;
-            statusEl.textContent = 'TRANSMITTING...';
+            if (selectedPattern.startsWith('ultrasonic')) {
+                statusEl.textContent = 'TRANSMITTING ULTRASONIC (19-22kHz) - You cannot hear this!';
+            } else {
+                statusEl.textContent = 'TRANSMITTING...';
+            }
             statusEl.classList.add('active');
             
             // Animate visualization during playback
@@ -636,11 +722,15 @@
         function generateAudio(signalData, baseFreq, sampleRate, totalSamples, pattern) {
             const audioData = new Float32Array(totalSamples);
             
+            // Use ultrasonic frequency for ultrasonic patterns
+            const isUltrasonic = pattern.startsWith('ultrasonic');
+            const actualFreq = isUltrasonic ? 19500 : baseFreq; // 19.5kHz for ultrasonic
+            
             if (pattern === 'frequency') {
                 // Variable frequency encoding
                 const samplesPerSymbol = Math.floor(totalSamples / signalData.length);
                 for (let i = 0; i < signalData.length; i++) {
-                    const freq = baseFreq + signalData[i] * 400;
+                    const freq = actualFreq + signalData[i] * 400;
                     for (let j = 0; j < samplesPerSymbol; j++) {
                         const idx = i * samplesPerSymbol + j;
                         if (idx < totalSamples) {
@@ -648,15 +738,37 @@
                         }
                     }
                 }
+            } else if (pattern === 'ultrasonic-sweep') {
+                // Sweep from 19kHz to 22kHz
+                const startFreq = 19000;
+                const endFreq = 22000;
+                for (let i = 0; i < totalSamples; i++) {
+                    const progress = i / totalSamples;
+                    const freq = startFreq + (endFreq - startFreq) * progress;
+                    audioData[i] = Math.sin(2 * Math.PI * freq * i / sampleRate) * 0.5;
+                }
+            } else if (isUltrasonic) {
+                // Ultrasonic on/off keying at 19.5kHz - 21kHz
+                const samplesPerBit = Math.floor(totalSamples / signalData.length);
+                for (let i = 0; i < signalData.length; i++) {
+                    const amplitude = signalData[i] > 0 ? 0.5 : 0;
+                    const freq = signalData[i] > 0 ? 20000 : 19000; // FSK between 19-20kHz
+                    for (let j = 0; j < samplesPerBit; j++) {
+                        const idx = i * samplesPerBit + j;
+                        if (idx < totalSamples) {
+                            audioData[idx] = Math.sin(2 * Math.PI * freq * idx / sampleRate) * amplitude;
+                        }
+                    }
+                }
             } else {
-                // On/off keying
+                // Standard on/off keying
                 const samplesPerBit = Math.floor(totalSamples / signalData.length);
                 for (let i = 0; i < signalData.length; i++) {
                     const amplitude = signalData[i] > 0 ? 0.5 : 0;
                     for (let j = 0; j < samplesPerBit; j++) {
                         const idx = i * samplesPerBit + j;
                         if (idx < totalSamples) {
-                            audioData[idx] = Math.sin(2 * Math.PI * baseFreq * idx / sampleRate) * amplitude;
+                            audioData[idx] = Math.sin(2 * Math.PI * actualFreq * idx / sampleRate) * amplitude;
                         }
                     }
                 }

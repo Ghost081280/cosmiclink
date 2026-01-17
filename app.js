@@ -521,8 +521,8 @@ function detectRadiation() {
     const pixels = currentFrame.data;
     
     let hits = 0;
-    const threshold = 60; // Brightness threshold for a "hit"
-    const clusterThreshold = 3; // Minimum bright pixels for a valid hit
+    const threshold = 80; // Brightness threshold for a "hit" (increased from 60)
+    const clusterThreshold = 5; // Minimum bright pixels for a valid hit (increased from 3)
     
     // Look for bright pixel clusters (cosmic ray signature)
     const brightPixels = [];
@@ -563,15 +563,19 @@ function detectRadiation() {
     // Update display
     updateRadiationDisplay(hits, state.sensors.radiation.totalHits);
     
-    // Register anomaly for significant hits
+    // Register anomaly for significant hits (rate limited to every 5 seconds)
+    const now = Date.now();
     if (hits >= clusterThreshold) {
-        console.log('Cosmic ray hit detected! Hits:', hits);
-        registerAnomaly('COSMIC', {
-            hits: hits,
-            totalHits: state.sensors.radiation.totalHits,
-            timestamp: Date.now(),
-            hasPattern: hits > 5 // Multiple simultaneous hits is unusual
-        });
+        if (!state.sensors.radiation.lastAnomalyTime || now - state.sensors.radiation.lastAnomalyTime > 5000) {
+            console.log('Cosmic ray hit detected! Hits:', hits);
+            registerAnomaly('COSMIC', {
+                hits: hits,
+                totalHits: state.sensors.radiation.totalHits,
+                timestamp: now,
+                hasPattern: hits > 8 // Multiple simultaneous hits is unusual
+            });
+            state.sensors.radiation.lastAnomalyTime = now;
+        }
     }
     
     radiationAnimationId = requestAnimationFrame(detectRadiation);
@@ -755,21 +759,19 @@ function checkForAnomalies() {
         const peaks = findPeaks(dataArray);
         const hasUnusualPattern = peaks.length >= 3 && hasRegularSpacing(peaks);
         
-        // Debug logging
-        if (deviation > 10) {
-            console.log('Deviation detected:', deviation, 'Peaks:', peaks.length, 'Pattern:', hasUnusualPattern);
-        }
-        
-        if (deviation > 15 || hasUnusualPattern) {
-            // Always register for now - remove random chance for testing
-            console.log('REGISTERING ANOMALY - deviation:', deviation);
+        // Only register if significant AND rate limited (2 seconds between audio anomalies)
+        const now = Date.now();
+        if ((deviation > 20 || hasUnusualPattern) && 
+            (!state.lastAudioAnomalyTime || now - state.lastAudioAnomalyTime > 2000)) {
+            console.log('REGISTERING AUDIO ANOMALY - deviation:', deviation, 'pattern:', hasUnusualPattern);
             registerAnomaly('AUDIO', {
                 deviation: deviation,
                 peaks: peaks,
-                timestamp: Date.now(),
+                timestamp: now,
                 frequencyData: Array.from(dataArray),
                 hasPattern: hasUnusualPattern
             });
+            state.lastAudioAnomalyTime = now;
         }
     }
     
@@ -834,6 +836,11 @@ function registerAnomaly(type, data) {
     state.anomalies.unshift(anomaly);
     state.totalAnomalies++;
     
+    // Cap at 100 stored anomalies - remove oldest
+    if (state.anomalies.length > 100) {
+        state.anomalies = state.anomalies.slice(0, 100);
+    }
+    
     console.log('Total anomalies now:', state.anomalies.length);
     
     updateAnomalyDisplay();
@@ -841,7 +848,13 @@ function registerAnomaly(type, data) {
     dom.totalAnomaliesEl.textContent = state.totalAnomalies;
     
     addLogEntry('signal', `Anomaly detected: ${type} signal deviation at ${formatTimestamp(data.timestamp)}`);
-    showToast('anomaly', `Potential ${type} signal detected!`);
+    
+    // Rate limit toasts - only show if last toast was more than 3 seconds ago
+    const now = Date.now();
+    if (!state.lastToastTime || now - state.lastToastTime > 3000) {
+        showToast('anomaly', `Potential ${type} signal detected!`);
+        state.lastToastTime = now;
+    }
 }
 
 function updateAnomalyDisplay() {

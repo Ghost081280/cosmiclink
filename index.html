@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CosmicLink | Universal Signal Detection Array</title>
+    <meta name="description" content="Transform your device into a multi-spectrum signal detection array. Listen to the cosmos with every sensor your device can capture.">
+    <meta name="theme-color" content="#0a0e17">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=IBM+Plex+Mono:wght@300;400;500&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="cosmos-bg">
+        <div class="stars"></div>
+        <div class="stars stars-2"></div>
+        <div class="stars stars-3"></div>
+        <div class="nebula"></div>
+    </div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Outer ring -->
+                    <circle cx="24" cy="24" r="22" stroke="url(#logoGradient)" stroke-width="1.5" fill="none"/>
+                    <!-- Signal waves -->
+                    <path d="M24 8 Q32 16 24 24 Q16 32 24 40" stroke="url(#waveGradient)" stroke-width="1.2" fill="none" opacity="0.7"/>
+                    <path d="M24 8 Q16 16 24 24 Q32 32 24 40" stroke="url(#waveGradient)" stroke-width="1.2" fill="none" opacity="0.7"/>
+                    <!-- Center pulse -->
+                    <circle cx="24" cy="24" r="4" fill="url(#coreGradient)"/>
+                    <circle cx="24" cy="24" r="8" stroke="url(#coreGradient)" stroke-width="0.8" fill="none" opacity="0.5"/>
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00d4ff"/>
+                            <stop offset="100%" stop-color="#7b2fff"/>
+                        </linearGradient>
+                        <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00d4ff"/>
+                            <stop offset="50%" stop-color="#00ff88"/>
+                            <stop offset="100%" stop-color="#7b2fff"/>
+                        </linearGradient>
+                        <radialGradient id="coreGradient">
+                            <stop offset="0%" stop-color="#00ff88"/>
+                            <stop offset="100%" stop-color="#00d4ff"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">COSMICLINK</span>
+            </div>
+            <div class="nav-status">
+                <div class="status-indicator" id="systemStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">STANDBY</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section Slider Navigation -->
+    <nav class="section-slider">
+        <button class="slider-tab active" data-section="scanner">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2v20M2 12h20"/>
+                <circle cx="12" cy="12" r="4"/>
+            </svg>
+            <span>SCANNER</span>
+        </button>
+        <button class="slider-tab" data-section="signals">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 12h4l3-9 4 18 3-9h6"/>
+            </svg>
+            <span>SIGNALS</span>
+        </button>
+        <button class="slider-tab" data-section="transmit">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 20V4M12 4l-6 6M12 4l6 6"/>
+                <path d="M4 12a8 8 0 0116 0" stroke-dasharray="4 2"/>
+            </svg>
+            <span>TRANSMIT</span>
+        </button>
+        <button class="slider-tab" data-section="log">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M7 8h10M7 12h10M7 16h6"/>
+            </svg>
+            <span>LOG</span>
+        </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        
+        <!-- SCANNER SECTION -->
+        <section class="content-section active" id="scanner-section">
+            <div class="scanner-container">
+                <!-- Primary Visualization -->
+                <div class="viz-primary">
+                    <canvas id="frequencyCanvas" class="frequency-display"></canvas>
+                    <div class="viz-overlay">
+                        <div class="scan-ring"></div>
+                        <div class="scan-ring ring-2"></div>
+                        <div class="scan-ring ring-3"></div>
+                    </div>
+                    <div class="viz-data">
+                        <div class="data-point">
+                            <span class="data-label">FREQ RANGE</span>
+                            <span class="data-value" id="freqRange">20Hz - 24kHz</span>
+                        </div>
+                        <div class="data-point">
+                            <span class="data-label">SAMPLE RATE</span>
+                            <span class="data-value" id="sampleRate">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sensor Status Grid -->
+                <div class="sensor-grid">
+                    <div class="sensor-card" id="audioSensor">
+                        <div class="sensor-header">
+                            <svg class="sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 1v22M8 5v14M4 9v6M16 5v14M20 9v6"/>
+                            </svg>
+                            <span class="sensor-name">AUDIO SPECTRUM</span>
+                        </div>
+                        <div class="sensor-status">
+                            <span class="sensor-state">INACTIVE</span>
+                            <div class="sensor-level">
+                                <div class="level-bar" id="audioLevel"></div>
+                            </div>
+                        </div>
+                        <div class="sensor-reading" id="audioReading">-- dB</div>
+                    </div>
+
+                    <div class="sensor-card" id="magSensor">
+                        <div class="sensor-header">
+                            <svg class="sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+                            </svg>
+                            <span class="sensor-name">MAGNETOMETER</span>
+                        </div>
+                        <div class="sensor-status">
+                            <span class="sensor-state">INACTIVE</span>
+                            <div class="sensor-level">
+                                <div class="level-bar" id="magLevel"></div>
+                            </div>
+                        </div>
+                        <div class="sensor-reading" id="magReading">-- μT</div>
+                    </div>
+
+                    <div class="sensor-card" id="motionSensor">
+                        <div class="sensor-header">
+                            <svg class="sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            <span class="sensor-name">MOTION/VIBRATION</span>
+                        </div>
+                        <div class="sensor-status">
+                            <span class="sensor-state">INACTIVE</span>
+                            <div class="sensor-level">
+                                <div class="level-bar" id="motionLevel"></div>
+                            </div>
+                        </div>
+                        <div class="sensor-reading" id="motionReading">-- m/s²</div>
+                    </div>
+
+                    <div class="sensor-card" id="lightSensor">
+                        <div class="sensor-header">
+                            <svg class="sensor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="5"/>
+                                <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+                            </svg>
+                            <span class="sensor-name">AMBIENT LIGHT</span>
+                        </div>
+                        <div class="sensor-status">
+                            <span class="sensor-state">INACTIVE</span>
+                            <div class="sensor-level">
+                                <div class="level-bar" id="lightLevel"></div>
+                            </div>
+                        </div>
+                        <div class="sensor-reading" id="lightReading">-- lux</div>
+                    </div>
+                </div>
+
+                <!-- Master Control -->
+                <div class="master-control">
+                    <button class="scan-button" id="masterScan">
+                        <span class="scan-button-ring"></span>
+                        <span class="scan-button-core">
+                            <svg class="scan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"/>
+                            </svg>
+                        </span>
+                        <span class="scan-button-text">INITIATE SCAN</span>
+                    </button>
+                    <div class="scan-duration">
+                        <span class="duration-label">SCAN TIME</span>
+                        <span class="duration-value" id="scanTime">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SIGNALS SECTION -->
+        <section class="content-section" id="signals-section">
+            <div class="signals-container">
+                <div class="signals-header">
+                    <h2 class="section-title">DETECTED ANOMALIES</h2>
+                    <div class="anomaly-counter">
+                        <span class="counter-value" id="anomalyCount">0</span>
+                        <span class="counter-label">POTENTIAL SIGNALS</span>
+                    </div>
+                </div>
+
+                <div class="signal-list" id="signalList">
+                    <div class="empty-state">
+                        <svg class="empty-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="32" cy="32" r="28" stroke-dasharray="4 4"/>
+                            <path d="M32 16v16l12 8"/>
+                        </svg>
+                        <p class="empty-text">No anomalies detected yet</p>
+                        <p class="empty-subtext">Start scanning to detect potential signals</p>
+                    </div>
+                </div>
+
+                <!-- Analysis Panel (shows when signal selected) -->
+                <div class="analysis-panel hidden" id="analysisPanel">
+                    <div class="analysis-header">
+                        <h3>SIGNAL ANALYSIS</h3>
+                        <button class="close-analysis" id="closeAnalysis">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="analysis-content">
+                        <canvas id="signalDetailCanvas" class="signal-detail-viz"></canvas>
+                        <div class="analysis-data" id="analysisData"></div>
+                        <button class="interpret-button" id="interpretSignal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                            INTERPRET WITH AI
+                        </button>
+                        <div class="interpretation-result hidden" id="interpretationResult"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TRANSMIT SECTION -->
+        <section class="content-section" id="transmit-section">
+            <div class="transmit-container">
+                <div class="transmit-header">
+                    <h2 class="section-title">BROADCAST ARRAY</h2>
+                    <p class="section-desc">Transmit a message using your device's available output channels</p>
+                </div>
+
+                <div class="transmit-form">
+                    <div class="input-group">
+                        <label class="input-label">YOUR MESSAGE</label>
+                        <textarea class="message-input" id="transmitMessage" placeholder="Enter your message to the cosmos..." maxlength="500"></textarea>
+                        <span class="char-count"><span id="charCount">0</span>/500</span>
+                    </div>
+
+                    <div class="encoding-options">
+                        <label class="input-label">ENCODING METHOD</label>
+                        <div class="encoding-grid">
+                            <button class="encoding-option active" data-encoding="binary">
+                                <span class="encoding-name">BINARY PULSE</span>
+                                <span class="encoding-desc">ASCII to binary tones</span>
+                            </button>
+                            <button class="encoding-option" data-encoding="frequency">
+                                <span class="encoding-name">FREQUENCY SHIFT</span>
+                                <span class="encoding-desc">Character to frequency map</span>
+                            </button>
+                            <button class="encoding-option" data-encoding="morse">
+                                <span class="encoding-name">COSMIC MORSE</span>
+                                <span class="encoding-desc">Modified morse code</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="transmit-preview">
+                        <label class="input-label">SIGNAL PREVIEW</label>
+                        <canvas id="transmitPreview" class="preview-canvas"></canvas>
+                    </div>
+
+                    <button class="transmit-button" id="beginTransmit">
+                        <span class="transmit-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </span>
+                        <span class="transmit-text">BEGIN TRANSMISSION</span>
+                    </button>
+
+                    <div class="transmit-status hidden" id="transmitStatus">
+                        <div class="transmit-progress">
+                            <div class="progress-bar" id="transmitProgress"></div>
+                        </div>
+                        <span class="status-text">TRANSMITTING...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOG SECTION -->
+        <section class="content-section" id="log-section">
+            <div class="log-container">
+                <div class="log-header">
+                    <h2 class="section-title">ACTIVITY LOG</h2>
+                    <button class="clear-log" id="clearLog">CLEAR</button>
+                </div>
+
+                <div class="log-filters">
+                    <button class="log-filter active" data-filter="all">ALL</button>
+                    <button class="log-filter" data-filter="signal">SIGNALS</button>
+                    <button class="log-filter" data-filter="transmit">TRANSMITS</button>
+                    <button class="log-filter" data-filter="system">SYSTEM</button>
+                </div>
+
+                <div class="log-entries" id="logEntries">
+                    <div class="log-entry system">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-type">SYSTEM</span>
+                        <span class="log-message">CosmicLink initialized. Awaiting scan command.</span>
+                    </div>
+                </div>
+
+                <div class="session-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="totalScanTime">00:00:00</span>
+                        <span class="stat-label">TOTAL SCAN TIME</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="totalAnomalies">0</span>
+                        <span class="stat-label">ANOMALIES DETECTED</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="totalTransmits">0</span>
+                        <span class="stat-label">TRANSMISSIONS SENT</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Footer -->
+    <footer class="bottom-footer">
+        <div class="footer-content">
+            <div class="coordinates">
+                <svg class="coord-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
+                <span class="coord-text" id="userCoords">ACQUIRING LOCATION...</span>
+            </div>
+            <div class="device-info">
+                <span class="device-text" id="deviceInfo">SENSOR ARRAY STANDBY</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
